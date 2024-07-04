@@ -6,8 +6,12 @@ Using Tensor decompositions for variable separation in PINNs.
 
 
 
+Required packages:
 
-
+tqdm
+jax
+pina 
+matplotlib
 
 
 
