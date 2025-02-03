@@ -1,7 +1,7 @@
 # TensorDecompositions4PINNs
 
-Using Tensor decompositions for variable separation in PINNs.
-
+### TL;DR: 
+Functional Tensor Decompositions explores how tensor decomposition techniques can unlock new possibilities for variable separation in Physics-Informed Neural Networks (PINNs), overcoming the curse of dimensionality in solving high-dimensional PDEs
 ## Abstract:
 
 Physics-Informed Neural Networks (PINNs) have shown great
