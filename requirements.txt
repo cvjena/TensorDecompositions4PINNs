@@ -1,5 +1,8 @@
 tqdm>=4.60
-jax~=0.5
+jax[cuda12]~=0.5
+flax~=0.10
+optax~=0.2
 matplotlib>=3.8
 jupyter>=1.0
 pina-mathlab>=0.1
+pandas>=2.2
