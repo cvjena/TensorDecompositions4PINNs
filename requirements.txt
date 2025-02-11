@@ -1,0 +1,5 @@
+tqdm>=4.60
+jax~=0.5
+matplotlib>=3.8
+jupyter>=1.0
+pina-mathlab>=0.1
