@@ -21,6 +21,10 @@ For more details, refer to our paper:
 - **Published version:** [Springer Link](https://dl.acm.org/doi/10.1007/978-3-031-78389-0_3)
 - **Preprint version:** [arXiv](https://arxiv.org/abs/2408.13101)
 
+## Change of Formal PDE notation style
+
+TODO explain here why we went from t,x,y notation to x,t,y
+
 ## Installation
 
 We use Anaconda to utilize virtual environments. Any other `venv` framework will also likely be suitable.

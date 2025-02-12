@@ -2,7 +2,6 @@ import os
 import time
 from functools import partial
 from pathlib import Path
-from typing import Sequence
 
 import jax
 import jax.numpy as jnp
@@ -11,10 +10,10 @@ import numpy as np
 import pandas as pd
 import tqdm
 from flax import linen as nn
-from jax import jvp, value_and_grad
+from jax import value_and_grad
 
-from model import CP_PINN
-from pde import Poisson5D, PDE, FlowMixing3D
+from model import CP_PINN, TT_PINN, Tucker_PINN
+from pde import Poisson5D, PDE, FlowMixing3D, Helmholtz3D, KleinGordon3D
 
 
 def relative_l2(u, u_gt):
@@ -79,40 +78,35 @@ def main(model: nn.Module, pde: PDE, NC: int, NC_TEST: int, SEED: int, LR: float
         pbar.update(1)
     pbar.close()
 
-    # # add one last log
-    # u = apply_fn(params, a, b, c, d, e)
-    # error = relative_l2(u, u_gt)
-    # logger.append([iters, loss, error])
-
     end = time.time()
     print(f"Runtime: {((end-start)/EPOCHS*1000):.2f} ms/iter.")
     return logger
 
 
 if __name__ == "__main__":
-    pde = Poisson5D()
-    # pde = FlowMixing3D()
     N_LAYERS = 4
 
-    out_folder = Path(pde.name) / "results"
-    out_folder.mkdir(exist_ok=True, parents=True)
-
     points = 24
-    for model_cls in [CP_PINN]:
-        for rank in [6, 8, 12]:
-            for run in range(10):
-                # feature sizes
-                feat_sizes = [rank for _ in range(N_LAYERS)]
+    for pde_cls in [Poisson5D, FlowMixing3D, Helmholtz3D, KleinGordon3D]:
+        pde = pde_cls()
+        out_folder = Path(pde.name) / "results"
+        out_folder.mkdir(exist_ok=True, parents=True)
 
-                model = model_cls(feat_sizes)
-                model_name = model.__class__.__name__
+        for model_cls in [CP_PINN]:
+            for rank in [6]:
+                for run in range(1):
+                    # feature sizes
+                    feat_sizes = [rank for _ in range(N_LAYERS)]
 
-                print(f"Running {model_name} with rank {rank} and run {run}")
+                    model = model_cls(feat_sizes, pde.input_dim)
+                    model_name = model.__class__.__name__
 
-                save_folder = out_folder / model_name / f"Rank_{rank:03d}"
-                save_folder.mkdir(exist_ok=True, parents=True)
+                    print(f"Running {model_name} with rank {rank} and run {run}")
 
-                logs = main(model=model, pde=pde, NC=points, NC_TEST=32, SEED=444444 + run, LR=1e-3, EPOCHS=10_000, LOG_ITER=5000)
+                    save_folder = out_folder / model_name / f"Rank_{rank:03d}"
+                    save_folder.mkdir(exist_ok=True, parents=True)
 
-                out_file = save_folder / f"{model_name}-Rank_{rank:02d}-Points_{points:02d}-run_{run:02d}.csv"
-                pd.DataFrame(logs, columns=["Iter", "Loss", "Error"]).to_csv(out_file, index=False, float_format="%.16f")
+                    logs = main(model=model, pde=pde, NC=points, NC_TEST=32, SEED=444444 + run, LR=1e-3, EPOCHS=10_000, LOG_ITER=5000)
+
+                    out_file = save_folder / f"{model_name}-Rank_{rank:02d}-Points_{points:02d}-run_{run:02d}.csv"
+                    pd.DataFrame(logs, columns=["Iter", "Loss", "Error"]).to_csv(out_file, index=False, float_format="%.16f")
